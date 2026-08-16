@@ -1,0 +1,9 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 环境、日志
+*.log
+.env
+venv/
