@@ -7,7 +7,7 @@
 
 然后在浏览器打开：http://127.0.0.1:8000
 
-要求：本文件、index.html、teaching.py 以及各 txt 文件放在同一目录下。
+要求：本文件、index.html、teach.py 以及各 txt 文件放在同一目录下。
 """
 import json
 import os
