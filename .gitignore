@@ -8,3 +8,15 @@ __pycache__/
 *.log
 .env
 venv/
+
+# Android 构建产物
+android/build/
+android/.buildozer/
+android/logs/
+android/gradle/
+
+# Windows 构建产物
+android/build/tutorfilter/windows/
+
+# APK 输出目录（保留 bin/ 下的 APK）
+# android/bin/ 保留

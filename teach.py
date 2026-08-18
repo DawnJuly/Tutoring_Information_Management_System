@@ -1,35 +1,37 @@
 def read_txt():
+    import os
+    base = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
     # 读取屏蔽词文件
     try:
-        with open('Blocked_words.txt', 'r', encoding='utf-8') as f:
+        with open(os.path.join(base, 'Blocked_words.txt'), 'r', encoding='utf-8') as f:
             Blocked_words = []
             for line in f.readlines():
                 line = line.strip()
                 Blocked_words.extend(line.split('、'))
     except FileNotFoundError:
-        print("错误：未找到 Blocked_words.txt 文件，请确认文件在同一目录下")
+        print("错误：未找到 Blocked_words.txt 文件，请确认文件在 data 目录下")
         return
 
     # 读取个人信息文件
     try:
-        with open('Personal_info.txt', 'r', encoding='utf-8') as f:
+        with open(os.path.join(base, 'Personal_info.txt'), 'r', encoding='utf-8') as f:
             Personal_info = {}
             for line in f.readlines():
                 line = line.strip().split('：')
                 Personal_info[line[0]] = line[-1]
     except FileNotFoundError:
-        print("错误：未找到 Personal_info.txt 文件，请确认文件在同一目录下")
+        print("错误：未找到 Personal_info.txt 文件，请确认文件在 data 目录下")
         return
 
     # 读取家教信息文件
     try:
-        with open('Tutor_info.txt', 'r', encoding='utf-8') as f:
+        with open(os.path.join(base, 'Tutor_info.txt'), 'r', encoding='utf-8') as f:
             content = f.read()
             # 按两个换行符（完整空行）切分段落
             content = content.replace('\r\n', '\n')
             Tutor_info = content.split('\n\n')
     except FileNotFoundError:
-        print("错误：未找到 Tutor_info.txt 文件，请确认文件在同一目录下")
+        print("错误：未找到 Tutor_info.txt 文件，请确认文件在 data 目录下")
         return
     return Blocked_words, Personal_info, Tutor_info
 
@@ -69,9 +71,12 @@ def change_txt(file_name, mode='1'):
     file_name: 要修改的文件名
     mode: '1' 重置信息（清空文件）；'2' 新增信息（逐行输入，输入 right 结束）
     """
+    import os
+    base = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+
     if mode == '1':
         # 重置信息：清空文件内容
-        with open(file_name, 'w', encoding='utf-8') as f:
+        with open(os.path.join(base, file_name), 'w', encoding='utf-8') as f:
             f.write('')
         print(f"✅ 已重置：{file_name}")
 
@@ -84,7 +89,7 @@ def change_txt(file_name, mode='1'):
             if line.strip() == 'right':
                 break
             new_lines.append(line)
-        with open(file_name, 'a', encoding='utf-8') as f:
+        with open(os.path.join(base, file_name), 'a', encoding='utf-8') as f:
             for line in new_lines:
                 f.write(line + '\n')
         print(f"✅ 已新增 {len(new_lines)} 行内容到：{file_name}")
@@ -128,8 +133,10 @@ if __name__ == '__main__':
             if file_choice not in files:
                 print("错误：无效的文件选择，请重新选择")
                 continue
+            import os
+            base = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
             try:
-                with open(files[file_choice], 'r', encoding='utf-8') as f:
+                with open(os.path.join(base, files[file_choice]), 'r', encoding='utf-8') as f:
                     print(f"===== {files[file_choice]} 内容如下 =====")
                     print(f.read())
             except FileNotFoundError:
@@ -143,8 +150,10 @@ if __name__ == '__main__':
 
     # 保存排序结果到 res.txt
     change_txt('res.txt', '1')  # 先重置 res.txt
-    with open('res.txt', 'a', encoding='utf-8') as f:
+    import os
+    base = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+    with open(os.path.join(base, 'res.txt'), 'a', encoding='utf-8') as f:
         for index, tutor in enumerate(sort_res, 1):
             f.write(f"===== 第 {index} 个 =====\n")
             f.write(tutor + '\n\n')
-    print("✅ 筛选排序结果已保存到：res.txt")
+    print("✅ 筛选排序结果已保存到：data/res.txt")

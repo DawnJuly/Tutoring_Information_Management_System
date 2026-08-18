@@ -1,0 +1,31 @@
+[tool.briefcase]
+project_name = "TutorFilter"
+bundle = "org.example"
+version = "1.0.0"
+url = "https://example.com/tutorfilter"
+license = "MIT"
+author = "User"
+author_email = "user@example.com"
+
+[tool.briefcase.app.tutorfilter]
+formal_name = "TutorFilter"
+description = "Tutor information filter and sort tool"
+icon = ""
+sources = ["src/tutorfilter"]
+requires = ["toga"]
+
+[tool.briefcase.app.tutorfilter.android]
+template = ""
+supported = true
+requires = [
+    "toga-android>=0.4.0",
+]
+build_gradle_dependencies = [
+    "com.google.android.material:material:1.9.0",
+]
+
+[tool.briefcase.app.tutorfilter.windows]
+supported = true
+requires = [
+    "toga-winforms>=0.4.0",
+]
