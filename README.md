@@ -28,6 +28,8 @@
 │   └── index.html                 # 前端页面
 ├── android/                       # Android 端
 │   ├── src/tutorfilter/
+│   │   ├── __init__.py            # 包初始化
+│   │   ├── __main__.py            # 应用入口
 │   │   ├── app.py                 # Toga UI
 │   │   ├── tutor_filter.py        # 核心算法
 │   │   └── data/                  # 内置默认数据

@@ -78,7 +78,7 @@ def change_txt(file_name, mode='1'):
         # 重置信息：清空文件内容
         with open(os.path.join(base, file_name), 'w', encoding='utf-8') as f:
             f.write('')
-        print(f"✅ 已重置：{file_name}")
+        print(f"[OK] 已重置：{file_name}")
 
     elif mode == '2':
         # 新增信息：逐行输入内容，输入 right 结束
@@ -92,7 +92,7 @@ def change_txt(file_name, mode='1'):
         with open(os.path.join(base, file_name), 'a', encoding='utf-8') as f:
             for line in new_lines:
                 f.write(line + '\n')
-        print(f"✅ 已新增 {len(new_lines)} 行内容到：{file_name}")
+        print(f"[OK] 已新增 {len(new_lines)} 行内容到：{file_name}")
 
     else:
         print("错误：无效的修改方式")
@@ -156,4 +156,4 @@ if __name__ == '__main__':
         for index, tutor in enumerate(sort_res, 1):
             f.write(f"===== 第 {index} 个 =====\n")
             f.write(tutor + '\n\n')
-    print("✅ 筛选排序结果已保存到：data/res.txt")
+    print("[OK] 筛选排序结果已保存到：data/res.txt")

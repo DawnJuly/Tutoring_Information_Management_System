@@ -162,7 +162,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     port = 8000
     server = HTTPServer(('127.0.0.1', port), Handler)
-    print('✅ 服务已启动，请用浏览器打开：http://127.0.0.1:%d' % port)
+    print('[OK] 服务已启动，请用浏览器打开：http://127.0.0.1:%d' % port)
     print('   按 Ctrl+C 停止服务')
     try:
         server.serve_forever()
