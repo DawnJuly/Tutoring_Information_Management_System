@@ -1,0 +1,18 @@
+[project]
+name = "tutorfilter"
+version = "2.0.0"
+description = "家教信息筛选排序系统：屏蔽词过滤 + 个人信息匹配度排序"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+dependencies = []
+
+[project.scripts]
+tutorfilter = "tutorfilter.cli:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["tutorfilter"]

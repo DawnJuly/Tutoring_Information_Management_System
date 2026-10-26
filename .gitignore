@@ -20,3 +20,6 @@ android/build/tutorfilter/windows/
 
 # APK 输出目录（保留 bin/ 下的 APK）
 # android/bin/ 保留
+
+# taste-skill 工作文件
+.taste-skill/

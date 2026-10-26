@@ -4,329 +4,446 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>家教信息筛选排序系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* 风格：achromatic-ledger（taste-skill 抽签，seed 154643381）
+     铬墨无色；唯一色相 #1d5fbf 只给匹配度数据；台账蓝灰底。 */
   :root {
-    --bg: #f4f6fb;
-    --card: #ffffff;
-    --primary: #4f6ef7;
-    --primary-dark: #3a54d4;
-    --danger: #e5484d;
-    --success: #2f9e44;
-    --text: #1f2430;
-    --muted: #6b7280;
-    --border: #e5e7eb;
-    --radius: 14px;
+    --ground: #f2f4f7;    /* 台账蓝灰底（本产品的「脸」） */
+    --surface: #ffffff;
+    --raised: #f7f8fa;
+    --border: #e6e6e6;
+    --rule: #f0f0f0;
+    --control: #d4d4d4;
+    --text: #0a0a0a;
+    --muted: #6b6b6b;
+    --primary: #141414;
+    --accent: #1d5fbf;    /* 唯一数据色相：匹配度 */
+    --accent-tint: rgba(29, 95, 191, .12);
+    --negative: #c4242a;
+    --radius-card: 8px;
+    --radius-control: 6px;
+    --gap: 12px;
+    --pad: 24px;
+    --control-h: 36px;
+    --font: "Geist", -apple-system, "Segoe UI", "Microsoft YaHei UI", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
-    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
-    background: var(--bg);
+    font-family: var(--font);
+    background: var(--ground);
     color: var(--text);
-    min-height: 100vh;
-    padding: 24px 16px 60px;
+    font-size: 14px;
+    line-height: 1.6;
   }
-  .container { max-width: 960px; margin: 0 auto; }
+  .num { font-variant-numeric: tabular-nums; }
+  button { font: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 2px; }
 
-  header {
-    background: linear-gradient(135deg, #4f6ef7 0%, #7c5cf0 100%);
-    color: #fff;
-    border-radius: var(--radius);
-    padding: 28px 32px;
-    margin-bottom: 24px;
-    box-shadow: 0 8px 24px rgba(79, 110, 247, 0.28);
+  .shell { max-width: 1100px; margin: 0 auto; padding: 32px 24px 48px; }
+
+  /* ── 产品行（外壳顶部：产品名 + 唯一主操作） ─────────────── */
+  .product {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 28px;
   }
-  header h1 { font-size: 24px; font-weight: 700; letter-spacing: 1px; }
-  header p { margin-top: 8px; font-size: 14px; opacity: 0.9; }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; }
+  .brand .mark {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: var(--primary); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600; line-height: 1; flex: none;
+  }
+  .primary-btn {
+    height: var(--control-h); padding: 0 18px;
+    background: var(--primary); color: #fff; border: none;
+    border-radius: var(--radius-control); font-size: 14px; font-weight: 500;
+    transition: background .15s;
+  }
+  .primary-btn:hover { background: #333; }
+  .primary-btn:active { background: #000; }
+  .primary-btn:disabled { background: #6b6b6b; cursor: default; }
 
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  /* ── 标题行 ─────────────────────────────────────────────── */
+  h1 { font-size: 24px; font-weight: 600; line-height: 1.3; letter-spacing: 0; }
+  .scope { margin-top: 4px; color: var(--muted); font-size: 14px; }
 
+  /* ── 卡片 ───────────────────────────────────────────────── */
   .card {
-    background: var(--card);
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 22px 24px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    border-radius: var(--radius-card);
+    padding: var(--pad);
   }
-  .card h2 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .cardhead {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; margin-bottom: 16px;
   }
-  .card h2 .dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--primary); display: inline-block;
-  }
+  .cardhead h2 { font-size: 16px; font-weight: 500; }
+  .cardhead .aside { color: var(--muted); font-size: 12px; }
 
-  label { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 6px; }
-  select, textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-    background: #fafbfd;
-    color: var(--text);
-    outline: none;
-    transition: border-color .15s;
+  main > .card { margin-top: var(--gap); }
+  main > .card:first-of-type { margin-top: 24px; }
+
+  /* ── 指标带：一张卡内 1px 分隔的四格 ─────────────────────── */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); padding: 0; }
+  .kpi {
+    padding: 18px 20px;
+    border-left: 1px solid var(--rule);
   }
-  select:focus, textarea:focus { border-color: var(--primary); }
-  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  .kpi:first-child { border-left: none; }
+  .kpi .label { font-size: 12px; color: var(--muted); }
+  .kpi .value { font-size: 24px; font-weight: 400; line-height: 1.3; margin-top: 2px; }
+  .kpi.lead .value { font-size: 32px; font-weight: 500; }  /* 屏蔽后保留多少条：本屏的答案 */
+  .kpi .value .of { font-size: 14px; color: var(--muted); font-weight: 400; }
 
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 10px 18px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    color: #fff;
-    background: var(--primary);
-    transition: background .15s, transform .05s;
+  /* ── 结果列表 ───────────────────────────────────────────── */
+  .results-list { list-style: none; }
+  .results-list li { padding: 14px 0; border-top: 1px solid var(--rule); }
+  .results-list li:first-child { border-top: none; padding-top: 0; }
+  .rowhead {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 6px; flex-wrap: wrap;
   }
-  .btn:hover { background: var(--primary-dark); }
-  .btn:active { transform: translateY(1px); }
-  .btn:disabled { background: #a9b4d6; cursor: not-allowed; }
-  .btn.danger { background: var(--danger); }
-  .btn.danger:hover { background: #c73a3f; }
-  .btn.success { background: var(--success); }
-  .btn.success:hover { background: #24873a; }
-  .btn.ghost { background: #eef1fb; color: var(--primary); }
-  .btn.ghost:hover { background: #e0e6fa; }
-
-  .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-
-  .full { grid-column: 1 / -1; }
-  @media (max-width: 720px) { .full { grid-column: auto; } }
-
-  .output {
-    margin-top: 16px;
-    background: #10151f;
-    color: #d8e0f0;
-    border-radius: 10px;
-    padding: 16px;
-    font-family: "SFMono-Regular", Consolas, "Courier New", monospace;
-    font-size: 13px;
-    line-height: 1.7;
-    white-space: pre-wrap;
-    word-break: break-all;
-    max-height: 420px;
-    overflow: auto;
-    display: none;
+  .rank { font-size: 14px; color: var(--muted); min-width: 2ch; text-align: right; }
+  .score { font-size: 15px; font-weight: 500; color: var(--accent); }  /* 唯一色相给主数据 */
+  .keys { display: flex; gap: 12px; flex-wrap: wrap; }
+  .key {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--muted);
   }
-  .output.show { display: block; }
-  .output .tag { color: #7c9bff; }
-
-  .toast {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-80px);
-    background: #1f2430;
-    color: #fff;
-    padding: 12px 22px;
-    border-radius: 30px;
-    font-size: 14px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.22);
-    transition: transform .3s ease;
-    z-index: 99;
-    max-width: 90vw;
+  .key .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    border: 1px solid var(--control); background: transparent; flex: none;
   }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.ok { background: var(--success); }
-  .toast.err { background: var(--danger); }
-
-  .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-  .stat {
-    flex: 1; min-width: 110px;
-    background: #f0f3ff;
-    border-radius: 10px;
-    padding: 12px 14px;
-    text-align: center;
+  .key.hit { color: var(--text); }
+  .key.hit .dot { background: var(--accent); border-color: var(--accent); }
+  .entry {
+    margin-left: 2ch;  /* 与名次列对齐 */
+    white-space: pre-wrap; word-break: break-word;
+    font-size: 14px; line-height: 1.65;
   }
-  .stat .num { font-size: 22px; font-weight: 700; color: var(--primary); }
-  .stat .lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .entry mark { background: var(--accent-tint); color: inherit; border-radius: 2px; padding: 0 1px; }
+
+  /* ── 空态 / 错误态 / 加载态 ─────────────────────────────── */
+  .state {
+    border: 1px dashed var(--control); border-radius: var(--radius-control);
+    padding: 14px 16px; color: var(--muted); font-size: 13px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .state .retry {
+    background: none; border: none; padding: 0;
+    color: var(--text); font-size: 13px; text-decoration: underline;
+  }
+  .skel { background: var(--raised); border-radius: 4px; height: 22px; display: inline-block; vertical-align: middle; }
+  .skel.w48 { width: 48px; } .skel.w80 { width: 80px; }
+
+  /* ── 数据管理 ───────────────────────────────────────────── */
+  .tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--border); }
+  .tab {
+    background: none; border: none; padding: 8px 2px 9px;
+    font-size: 14px; color: var(--muted);
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: color .15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--primary); }
+  .filehint { color: var(--muted); font-size: 12px; margin: 12px 0 6px; }
+  .preview {
+    background: var(--raised); border-radius: var(--radius-control);
+    padding: 12px 14px; max-height: 216px; overflow: auto;
+    font-family: inherit; font-size: 13px; line-height: 1.7;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .field-label { display: block; font-size: 13px; font-weight: 500; margin: 16px 0 6px; }
+  textarea {
+    width: 100%; min-height: 96px; resize: vertical;
+    border: 1px solid var(--control); border-radius: var(--radius-control);
+    padding: 9px 12px; font: inherit; font-size: 14px; line-height: 1.6;
+    background: var(--surface); color: var(--text);
+  }
+  textarea:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+  .manage-actions {
+    display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap;
+  }
+  .secondary-btn {
+    height: var(--control-h); padding: 0 16px;
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--control); border-radius: var(--radius-control);
+    font-size: 14px; transition: border-color .15s;
+  }
+  .secondary-btn:hover { border-color: var(--muted); }
+  .manage-status { font-size: 12px; color: var(--muted); }
+  .danger-zone { margin-left: auto; }
+  .danger-btn {
+    background: none; border: none; padding: 8px 0;
+    color: var(--negative); font-size: 13px;
+  }
+  .danger-btn:hover { text-decoration: underline; }
+  .confirm {
+    display: none; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: 13px; color: var(--text);
+  }
+  .confirm.show { display: inline-flex; }
+  .confirm-text { color: var(--negative); }
+  .confirm .danger-btn { padding: 0; text-decoration: underline; }
+  .cancel-btn { background: none; border: none; font-size: 13px; color: var(--muted); padding: 8px 0; }
+  .cancel-btn:hover { color: var(--text); }
+
+  footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
+
+  /* ── 手机（≤640px）──────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .shell { padding: 16px 16px 40px; }
+    .product { margin-bottom: 20px; }
+    .brand { font-size: 15px; }
+    .brand .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .primary-btn { padding: 0 14px; min-height: 44px; }
+    h1 { font-size: 20px; }
+    .kpis { grid-template-columns: 1fr 1fr; }
+    .kpi:nth-child(3) { border-left: none; }
+    .kpi:nth-child(n+3) { border-top: 1px solid var(--rule); }
+    .kpi .value { font-size: 22px; }
+    .kpi.lead .value { font-size: 26px; }
+    .tabs { gap: 14px; overflow-x: auto; }
+    .tab { flex: none; }
+    .entry { margin-left: 0; }
+    .danger-zone { margin-left: 0; }
+    .secondary-btn { min-height: 44px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
 </style>
 </head>
 <body>
-<div class="container">
+<div class="shell">
 
-  <header>
-    <h1>📚 家教信息筛选排序系统</h1>
-    <p>屏蔽词过滤 · 个人信息匹配排序 · 文件查看与修改</p>
+  <header class="product">
+    <div class="brand"><span class="mark" aria-hidden="true">筛</span><span class="name">家教信息筛选排序系统</span></div>
+    <button id="runBtn" class="primary-btn" type="button">运行筛选</button>
   </header>
 
-  <div class="grid">
-
-    <!-- 运行筛选排序 -->
-    <div class="card full">
-      <h2><span class="dot"></span>筛选与排序</h2>
-      <p style="font-size:13px;color:var(--muted);">读取「屏蔽词 / 个人信息 / 家教信息」三个文件，先过滤含屏蔽词的家教，再按与个人信息的匹配度降序排列，结果自动保存到 <b>res.txt</b>。</p>
-      <div class="btn-row">
-        <button class="btn success" id="runBtn" onclick="runPipeline()">▶ 运行筛选排序</button>
-      </div>
-      <div class="stats" id="stats" style="display:none;">
-        <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">家教总数</div></div>
-        <div class="stat"><div class="num" id="statOut">0</div><div class="lbl">被过滤</div></div>
-        <div class="stat"><div class="num" id="statKeep">0</div><div class="lbl">保留</div></div>
-      </div>
-      <div class="output" id="runOutput"></div>
+  <main>
+    <div class="titleblock">
+      <h1>筛选结果</h1>
+      <p class="scope">读取 data/ 三个文件 · 命中屏蔽词即剔除 · 按个人信息匹配度降序</p>
     </div>
 
-    <!-- 查看文件 -->
-    <div class="card">
-      <h2><span class="dot"></span>查看文件</h2>
-      <label for="viewFile">选择要查看的文件</label>
-      <select id="viewFile">
-        <option value="Blocked_words.txt">Blocked_words.txt（屏蔽词）</option>
-        <option value="Personal_info.txt">Personal_info.txt（个人信息）</option>
-        <option value="Tutor_info.txt">Tutor_info.txt（家教信息）</option>
-        <option value="res.txt">res.txt（排序结果）</option>
-      </select>
-      <div class="btn-row">
-        <button class="btn" onclick="viewFile()">👁 查看内容</button>
+    <section class="card kpis" id="kpis" aria-label="筛选统计">
+      <div class="kpi"><div class="label">家教信息</div><div class="value num"><span class="skel w48"></span></div></div>
+      <div class="kpi"><div class="label">屏蔽过滤</div><div class="value num"><span class="skel w48"></span></div></div>
+      <div class="kpi lead"><div class="label">保留</div><div class="value num"><span class="skel w48"></span></div></div>
+      <div class="kpi"><div class="label">最高匹配</div><div class="value num"><span class="skel w48"></span></div></div>
+    </section>
+
+    <section class="card">
+      <div class="cardhead">
+        <h2>排序结果</h2>
+        <span class="aside num" id="resultCount"></span>
       </div>
-      <div class="output" id="viewOutput"></div>
-    </div>
+      <div id="resultBody"><div class="state">正在读取数据…</div></div>
+    </section>
 
-    <!-- 修改文件 -->
-    <div class="card">
-      <h2><span class="dot"></span>修改文件</h2>
-      <label for="editFile">选择要修改的文件</label>
-      <select id="editFile">
-        <option value="Blocked_words.txt">Blocked_words.txt（屏蔽词）</option>
-        <option value="Personal_info.txt">Personal_info.txt（个人信息）</option>
-        <option value="Tutor_info.txt">Tutor_info.txt（家教信息）</option>
-      </select>
-
-      <label for="appendText">新增内容（可多行，追加到文件末尾）</label>
-      <textarea id="appendText" placeholder="每行一条记录，例如：&#10;张三：初三数学&#10;李四：高一物理"></textarea>
-
-      <div class="btn-row">
-        <button class="btn" onclick="appendFile()">＋ 新增内容</button>
-        <button class="btn danger" onclick="resetFile()">🗑 重置（清空）</button>
+    <section class="card">
+      <div class="cardhead">
+        <h2>数据管理</h2>
+        <span class="aside">改动后需重新运行筛选</span>
       </div>
-    </div>
+      <div class="tabs" role="tablist" aria-label="数据文件">
+        <button class="tab" role="tab" id="tab-Blocked_words.txt" aria-selected="true" data-file="Blocked_words.txt">屏蔽词</button>
+        <button class="tab" role="tab" id="tab-Personal_info.txt" aria-selected="false" data-file="Personal_info.txt">个人信息</button>
+        <button class="tab" role="tab" id="tab-Tutor_info.txt" aria-selected="false" data-file="Tutor_info.txt">家教信息</button>
+      </div>
+      <p class="filehint" id="fileHint"></p>
+      <pre class="preview" id="filePreview">正在读取…</pre>
+      <label class="field-label" for="appendText">新增内容（追加到文件末尾）</label>
+      <textarea id="appendText" rows="4" placeholder="每行一条，格式见上方说明"></textarea>
+      <div class="manage-actions">
+        <button id="appendBtn" class="secondary-btn" type="button">新增内容</button>
+        <span class="manage-status" id="manageStatus" aria-live="polite"></span>
+        <span class="danger-zone">
+          <button id="resetBtn" class="danger-btn" type="button">清空此文件</button>
+          <span class="confirm" id="confirmBox">
+            <span class="confirm-text" id="confirmText"></span>
+            <button class="danger-btn" id="confirmYes" type="button">确认清空</button>
+            <button class="cancel-btn" id="confirmNo" type="button">取消</button>
+          </span>
+        </span>
+      </div>
+    </section>
+  </main>
 
-  </div>
+  <footer>数据保存在本地 data/ 目录 · 完整排序结果同时写入 data/res.txt</footer>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
-  const API = ''; // 同源，直接请求
+"use strict";
+const $ = (id) => document.getElementById(id);
 
-  function toast(msg, type) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast show ' + (type || '');
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => t.classList.remove('show'), 2600);
+const FILE_META = {
+  "Blocked_words.txt":  { label: "屏蔽词",   hint: "每行一个或多个词，用中文顿号「、」分隔" },
+  "Personal_info.txt":  { label: "个人信息", hint: "每行「键：值」（全角冒号），值内备选词用「、」分隔" },
+  "Tutor_info.txt":     { label: "家教信息", hint: "每条信息是一个段落，条与条之间空一行" },
+};
+let currentFile = "Blocked_words.txt";
+let personalTerms = {};   // 键 → 备选词（来自 /api/run，解析逻辑只在服务端存一份）
+
+async function api(path, body) {
+  const res = await fetch(path, body
+    ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
+    : undefined);
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || "请求失败");
+  return data;
+}
+
+/* 把命中的备选词在原文里做浅蓝标记：最长优先、互不重叠 */
+function markTerms(text, terms) {
+  const spans = [];
+  for (const t of terms) {
+    if (!t) continue;
+    let i = text.indexOf(t);
+    while (i !== -1) { spans.push([i, i + t.length]); i = text.indexOf(t, i + t.length); }
   }
-
-  async function post(url, body) {
-    const res = await fetch(API + url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body || {})
-    });
-    return res.json();
+  spans.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]) || a[0] - b[0]);
+  const taken = [];
+  for (const s of spans) {
+    if (!taken.some(t => s[0] < t[1] && t[0] < s[1])) taken.push(s);
   }
-
-  function showOutput(el, text) {
-    el.textContent = text;
-    el.classList.add('show');
+  taken.sort((a, b) => a[0] - b[0]);
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  let out = "", pos = 0;
+  for (const [a, b] of taken) {
+    out += esc(text.slice(pos, a)) + "<mark>" + esc(text.slice(a, b)) + "</mark>";
+    pos = b;
   }
+  return out + esc(text.slice(pos));
+}
 
-  // 查看文件
-  async function viewFile() {
-    const file = document.getElementById('viewFile').value;
-    const out = document.getElementById('viewOutput');
-    try {
-      const data = await fetch(API + '/api/view?file=' + encodeURIComponent(file)).then(r => r.json());
-      if (data.ok) {
-        showOutput(out, '===== ' + data.file + ' 内容如下 =====\n\n' + (data.content || '（文件为空）'));
-        toast('已加载：' + data.file, 'ok');
-      } else {
-        showOutput(out, '❌ ' + data.error);
-        toast(data.error, 'err');
-      }
-    } catch (e) {
-      toast('请求失败，请确认服务已启动', 'err');
-    }
+function renderRun(d) {
+  const kpis = $("kpis").querySelectorAll(".kpi .value");
+  const keys = Object.keys(d.personal);
+  const best = d.results.length ? d.results[0].score : null;
+  kpis[0].textContent = d.total;
+  kpis[1].textContent = d.filtered_out;
+  kpis[2].textContent = d.kept;
+  kpis[3].innerHTML = best === null ? "—" : `${best}<span class="of"> / ${keys.length}</span>`;
+
+  const body = $("resultBody");
+  $("resultCount").textContent = d.kept ? `共 ${d.kept} 条` : "";
+  if (!d.results.length) {
+    body.innerHTML = `<div class="state">${
+      d.total ? "没有保留条目：全部被屏蔽词剔除。" : "家教信息为空。在下方「数据管理」录入后重新运行。"
+    }</div>`;
+    return;
   }
+  body.innerHTML = "<ol class=\"results-list\">" + d.results.map((r, i) => {
+    const keysHtml = keys.map((k) =>
+      `<span class="key${r.matched.includes(k) ? " hit" : ""}"><span class="dot"></span>${k}</span>`
+    ).join("");
+    const allTerms = Object.values(d.personal).flat();
+    return `<li>
+      <div class="rowhead">
+        <span class="rank num">${i + 1}</span>
+        <span class="score num">${r.score}<span style="color:var(--muted);font-weight:400"> / ${keys.length}</span></span>
+        <span class="keys">${keysHtml}</span>
+      </div>
+      <p class="entry">${markTerms(r.entry, allTerms)}</p>
+    </li>`;
+  }).join("") + "</ol>";
+}
 
-  // 新增内容
-  async function appendFile() {
-    const file = document.getElementById('editFile').value;
-    const text = document.getElementById('appendText').value;
-    if (!text.trim()) { toast('请先输入要新增的内容', 'err'); return; }
-    try {
-      const data = await post('/api/append', { file: file, content: text + '\n' });
-      if (data.ok) {
-        toast(data.msg, 'ok');
-        document.getElementById('appendText').value = '';
-      } else {
-        toast(data.error, 'err');
-      }
-    } catch (e) {
-      toast('请求失败，请确认服务已启动', 'err');
-    }
+async function runPipeline() {
+  const btn = $("runBtn");
+  btn.disabled = true;
+  btn.textContent = "运行中…";
+  $("resultBody").innerHTML = "<div class=\"state\">正在筛选排序…</div>";
+  try {
+    const d = await api("/api/run", {});
+    personalTerms = d.personal;
+    renderRun(d);
+  } catch (e) {
+    $("resultBody").innerHTML =
+      `<div class="state">运行失败：${e.message}<button class="retry" type="button">重试</button></div>`;
+    $("resultBody").querySelector(".retry").addEventListener("click", runPipeline);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "运行筛选";
   }
+}
 
-  // 重置（清空）
-  async function resetFile() {
-    const file = document.getElementById('editFile').value;
-    if (!confirm('确定要清空「' + file + '」吗？此操作不可恢复！')) return;
-    try {
-      const data = await post('/api/reset', { file: file });
-      if (data.ok) toast(data.msg, 'ok');
-      else toast(data.error, 'err');
-    } catch (e) {
-      toast('请求失败，请确认服务已启动', 'err');
-    }
+/* ── 数据管理 ─────────────────────────────────────────── */
+function setTab(file) {
+  currentFile = file;
+  document.querySelectorAll(".tab").forEach((t) =>
+    t.setAttribute("aria-selected", String(t.dataset.file === file)));
+  $("fileHint").textContent = `${FILE_META[file].label} — ${FILE_META[file].hint}`;
+  $("confirmBox").classList.remove("show");
+  $("resetBtn").style.display = "";
+  loadPreview();
+}
+
+async function loadPreview() {
+  const pre = $("filePreview");
+  pre.textContent = "正在读取…";
+  try {
+    const d = await api("/api/view?file=" + encodeURIComponent(currentFile));
+    pre.textContent = d.content || "（文件为空）";
+  } catch (e) {
+    pre.textContent = `读取失败：${e.message}`;
   }
+}
 
-  // 运行筛选排序
-  async function runPipeline() {
-    const btn = document.getElementById('runBtn');
-    const out = document.getElementById('runOutput');
-    btn.disabled = true;
-    btn.textContent = '⏳ 运行中…';
-    try {
-      const data = await post('/api/run');
-      if (data.ok) {
-        document.getElementById('stats').style.display = 'flex';
-        document.getElementById('statTotal').textContent = data.total;
-        document.getElementById('statOut').textContent = data.filtered_out;
-        document.getElementById('statKeep').textContent = data.kept;
-
-        let text = '✅ 筛选排序完成，结果已保存到 res.txt\n\n';
-        text += '家教总数：' + data.total + '   被过滤：' + data.filtered_out + '   保留：' + data.kept + '\n\n';
-        data.result.forEach((tutor, i) => {
-          text += '===== 第 ' + (i + 1) + ' 个 =====\n' + tutor + '\n\n';
-        });
-        showOutput(out, text);
-        toast('✅ 筛选排序完成，已保存到 res.txt', 'ok');
-      } else {
-        showOutput(out, '❌ ' + data.error);
-        toast(data.error, 'err');
-      }
-    } catch (e) {
-      toast('请求失败，请确认服务已启动', 'err');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = '▶ 运行筛选排序';
-    }
+async function appendContent() {
+  const text = $("appendText").value;
+  const status = $("manageStatus");
+  if (!text.trim()) { status.textContent = "请先输入要新增的内容"; return; }
+  try {
+    await api("/api/append", { file: currentFile, content: text + (text.endsWith("\n") ? "" : "\n") });
+    const lines = text.split("\n").filter((l) => l.trim()).length;
+    status.textContent = `已新增 ${lines} 行到「${FILE_META[currentFile].label}」`;
+    $("appendText").value = "";
+    loadPreview();
+  } catch (e) {
+    status.textContent = `新增失败：${e.message}`;
   }
+}
+
+function resetFile() {
+  $("confirmText").textContent = `确认清空「${FILE_META[currentFile].label}」？此操作不可恢复。`;
+  $("resetBtn").style.display = "none";
+  $("confirmBox").classList.add("show");
+}
+
+async function confirmReset() {
+  try {
+    await api("/api/reset", { file: currentFile });
+    $("manageStatus").textContent = `已清空「${FILE_META[currentFile].label}」`;
+    $("confirmBox").classList.remove("show");
+    $("resetBtn").style.display = "";
+    loadPreview();
+  } catch (e) {
+    $("manageStatus").textContent = `清空失败：${e.message}`;
+  }
+}
+
+document.querySelectorAll(".tab").forEach((t) =>
+  t.addEventListener("click", () => setTab(t.dataset.file)));
+$("runBtn").addEventListener("click", runPipeline);
+$("appendBtn").addEventListener("click", appendContent);
+$("resetBtn").addEventListener("click", resetFile);
+$("confirmYes").addEventListener("click", confirmReset);
+$("confirmNo").addEventListener("click", () => {
+  $("confirmBox").classList.remove("show");
+  $("resetBtn").style.display = "";
+});
+
+runPipeline();
+setTab(currentFile);
 </script>
 </body>
 </html>

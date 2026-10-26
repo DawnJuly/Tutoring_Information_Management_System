@@ -1,216 +1,106 @@
 # 家教信息筛选排序系统
 
-一个基于 Python 的家教信息筛选与排序工具：根据「屏蔽词」过滤不符合要求的家教，再按「个人信息」匹配度降序排序，最终结果保存到 `res.txt`。提供命令行、Web 界面、Android 应用三种使用方式。
+一个零依赖的本地小工具：把群里收到的家教信息贴进 `Tutor_info.txt`，系统先用**屏蔽词**剔除不想接的单，再按与**个人信息**的匹配度降序排列，告诉你哪些单子值得先看。结果写入 `res.txt`，也在界面里直接读。
 
----
+提供命令行、Web 界面、Android 应用三个入口，共用同一套核心流水线。系统行为的完整规格见 [docs/SPEC.md](docs/SPEC.md)，架构图见 [docs/architecture.html](docs/architecture.html)（克隆后用浏览器打开）。
 
-## 功能特性
+**Web 界面**（桌面端，加载即自动运行筛选；匹配命中的备选词在原文中浅蓝高亮）：
 
-- **屏蔽词过滤**：自动剔除包含任意屏蔽词的家教信息
-- **匹配度排序**：按家教信息与个人需求的匹配次数从高到低排序
-- **结果持久化**：排序结果自动保存到 `res.txt`
-- **文件管理**：支持查看、重置（清空）、追加内容到数据文件
-- **多平台支持**：命令行、Web 界面、Android APK
+![Web 界面 · 桌面端](docs/screenshot.jpg)
 
----
+手机端同样可用（指标 2×2、标签页横滑）：
 
-## 目录结构
+![Web 界面 · 手机端](docs/screenshot-mobile.jpg)
 
 ```
-.
-├── data/                          # 数据文件
-│   ├── Blocked_words.txt          # 屏蔽词列表
-│   ├── Personal_info.txt          # 个人信息匹配条件
-│   ├── Tutor_info.txt             # 家教信息源
-│   └── res.txt                    # 排序结果输出
-├── web/                           # 网页版
-│   ├── server.py                  # 后端服务
-│   └── index.html                 # 前端页面
-├── android/                       # Android 端
-│   ├── src/tutorfilter/
-│   │   ├── __init__.py            # 包初始化
-│   │   ├── __main__.py            # 应用入口
-│   │   ├── app.py                 # Toga UI
-│   │   ├── tutor_filter.py        # 核心算法
-│   │   └── data/                  # 内置默认数据
-│   ├── pyproject.toml             # Briefcase 配置
-│   └── bin/
-│       └── 家教信息筛选排序系统.apk   # 生成的安装包
-├── teach.py                       # 命令行版核心逻辑
-└── README.md                      # 本文件
+命令行 ──────┐
+Web 界面 ────┼──▶ 核心流水线（解析 → 过滤 → 计分 → 排序）──▶ res.txt
+Android ─────┘            ▲   │
+                          │   ▼
+                data/ 三个数据文件
 ```
-
----
 
 ## 快速开始
 
-### 环境要求
+要求 Python 3.8+。除 Android 打包外**无任何第三方依赖**。
 
-- Python 3.6+
-- 命令行版：纯标准库，无需安装第三方包
-- Web 版：纯标准库，无需安装第三方包
-- Android 版：需安装 [Briefcase](https://briefcase.readthedocs.io/)
-
----
-
-### 方式一：命令行使用
+### Web 界面（推荐）
 
 ```bash
-python teach.py
+python web/server.py        # 默认 8000 端口，可加参数指定端口
 ```
 
-按提示操作：
+浏览器打开 <http://127.0.0.1:8000>。页面加载即自动运行一次筛选；改动数据后在右上角重新运行。
 
-| 输入 | 含义 |
-|------|------|
-| `0` | 不需要修改，直接执行筛选排序并退出 |
-| `1` | 修改文件（可选择重置 / 新增） |
-| `3` | 查看文件内容 |
-| `finish` | 结束修改任务并执行筛选排序 |
-
-数据文件位于 `data/` 目录下。
-
----
-
-### 方式二：Web 界面使用
+### 命令行
 
 ```bash
-python web/server.py
+python -m tutorfilter               # 跑流水线，终端预览前 5 条
+python -m tutorfilter -n 10         # 预览前 10 条
+python -m tutorfilter -d 路径/到/data   # 指定数据目录
 ```
 
-浏览器打开 **http://127.0.0.1:8000**
+完整结果始终写入 `data/res.txt`。
 
-> 注意：不要直接双击 `index.html`，必须通过服务器地址访问。
+### Android
 
----
-
-### 方式三：Android 应用
-
-1. 将 `android/bin/家教信息筛选排序系统.apk` 传输到手机
-2. 点击安装（需允许「安装未知来源应用」）
-3. 打开应用即可使用
-
-APK 构建方式（开发者）：
+`android/bin/` 下有已构建的 APK，传到手机安装即可。重新构建（需 [Briefcase](https://briefcase.readthedocs.io/)）：
 
 ```bash
 cd android
-briefcase create android
-briefcase build android
+briefcase create android && briefcase build android
 ```
 
----
+## 数据文件（UTF-8，位于 `data/`）
 
-## 数据文件格式
+| 文件 | 格式 |
+|------|------|
+| `Blocked_words.txt` | 每行一个或多个屏蔽词，`、` 分隔；命中任一词整条剔除 |
+| `Personal_info.txt` | 每行 `键：值`（全角冒号）；值是备选词，`、` 分隔 |
+| `Tutor_info.txt` | 每条信息一个段落，条与条之间空行 |
+| `res.txt` | 输出：按 `===== 第 N 个 =====` 分条的排序结果 |
 
-### Blocked_words.txt（屏蔽词）
+**匹配度语义**：一个键算匹配，当且仅当它的**任意一个备选词**出现在该条信息里；匹配度 = 命中的键的个数，按其降序排列，同分保持原文顺序。
 
-每行一个或多个屏蔽词，多个词用中文顿号 `、` 分隔：
-
-```
-英语、语文、ket
-女大学生、女老师
-佛山、汕头、惠州
-```
-
-### Personal_info.txt（个人信息）
-
-每行一条，格式为 `键：值`（冒号为中文全角冒号 `：`）：
-
-```
-地址：黄埔区、天河区、海珠区、番禺区
-年级：五年级、六年级、初一、初二、初三、高一、高二
-科目：数学、物理
-时薪：110/小时、120/小时、130/小时
-```
-
-### Tutor_info.txt（家教信息）
-
-每条家教信息之间用**空行**分隔：
-
-```
-【编号】8223
-【地址】天河区华景新天地
-【年级】五年级
-【科目】数学
-
-【编号】8224
-【地址】番禺区祈福新村
-【年级】初三
-【科目】物理
-```
-
----
-
-## Web 服务端 API
+## Web API
 
 | 方法 | 路径 | 参数 | 说明 |
 |------|------|------|------|
 | GET | `/api/view` | `?file=文件名` | 查看文件内容 |
 | POST | `/api/reset` | `{"file": "文件名"}` | 清空文件 |
 | POST | `/api/append` | `{"file": "文件名", "content": "内容"}` | 追加内容 |
-| POST | `/api/run` | — | 执行筛选排序并返回结果 |
+| POST | `/api/run` | — | 运行流水线，返回统计与逐条匹配信息 |
 
-可用文件名：`Blocked_words.txt`、`Personal_info.txt`、`Tutor_info.txt`、`res.txt`
+文件名白名单：上述四个文件。
 
----
+## 测试
 
-## 核心算法说明
-
-### 过滤逻辑
-
-遍历所有家教信息，若包含任意屏蔽词则剔除：
-
-```python
-def filter_tutors(Blocked_words, Tutor_info):
-    filter_list = []
-    for info in Tutor_info:
-        has_forbidden = False
-        for word in Blocked_words:
-            if word in info:
-                has_forbidden = True
-                break
-        if not has_forbidden:
-            filter_list.append(info)
-    return filter_list
+```bash
+python -m unittest discover tests -v     # 21 个用例，纯标准库
 ```
 
-### 排序逻辑
+## 目录结构
 
-按个人信息匹配次数降序排列：
-
-```python
-def sorted_tutors(Personal_info, filter_res):
-    match_criteria = list(Personal_info.values())
-
-    def get_match_count(info):
-        count = 0
-        for value in match_criteria:
-            if value in info:
-                count += 1
-        return count
-
-    return sorted(filter_res, key=get_match_count, reverse=True)
+```
+.
+├── tutorfilter/            # 核心包：core.py 纯逻辑 / storage.py 文件读写 / cli.py 命令行
+├── web/                    # server.py（标准库 HTTP）+ index.html
+├── android/                # Briefcase/Toga 应用（vendored 核心副本，与 core.py 同步维护）
+├── tests/                  # unittest 测试
+├── data/                   # 数据文件（res.txt 为生成物）
+├── docs/                   # SPEC.md（规格）· architecture.html（架构图）
+└── pyproject.toml
 ```
 
----
+## v2 重建说明
 
-## 常见问题
+本版本是按「先写规格、测试先行、最小实现」流程的重建版，相对 v1 的行为变化：
 
-**Q：Web 界面提示「请求失败，请确认服务已启动」？**
-
-1. 确认是通过 `http://127.0.0.1:8000` 访问，而不是双击打开 `index.html`
-2. 确认 `python web/server.py` 已成功启动
-3. 端口被占用时，修改 `web/server.py` 末尾的 `port = 8000` 为其他端口
-
-**Q：找不到 txt 文件？**
-
-确认数据文件在 `data/` 目录下，且文件名完全一致。
-
-**Q：Android 应用首次启动数据为空？**
-
-应用首次启动会自动将内置默认数据复制到私有存储，请稍等片刻后重新加载。
-
----
+- **修复匹配排序失效 bug**：v1 把整条值串（如「五年级、六年级、初一、…」）当子串匹配，几乎永远 0 分；v2 按备选词逐键计分（数据文件无需任何改动）。
+- **修复屏蔽词空片段**：行尾多余的 `、` 不再产生能匹配一切的空串。
+- **缺文件报错带文件名**，不再返回 `None` 崩在调用方。
+- **CLI 精简**为「跑流水线」一件事；文件编辑交给 Web 界面或任意文本编辑器（v1 的编号菜单已移除）。
+- 新增 21 个单元测试、规格文档、架构图；Web 界面按工具型应用规范重做。
 
 ## License
 
